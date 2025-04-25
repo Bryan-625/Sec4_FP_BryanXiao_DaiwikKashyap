@@ -1,0 +1,64 @@
+---
+title: "FP_Stat184"
+author: "Bryan Xiao, Daiwik Kashyap"
+format: 
+  pdf:
+    embed-resources: true
+    toc: true
+editor: visual
+---
+
+```{r}
+#| label: Libraries
+#| echo: false
+#| message: false
+# Loading Libraries
+library(tidyverse)
+library(googlesheets4)
+library(ggplot2)
+library(dcData)
+library(knitr)
+library(tinytex)
+
+# Loading Datasets
+import kagglehub
+from kagglehub import KaggleDatasetAdapter
+
+# Set the path to the file you'd like to load
+file_path = ""
+
+# Load the latest version
+mostPlayedDataset = kagglehub.load_dataset(
+  KaggleDatasetAdapter.PANDAS,
+  "faisaljanjua0555/most-played-games-of-all-time",
+  file_path,
+  # Provide any additional arguments like 
+  # sql_query or pandas_kwargs. See the 
+  # documenation for more information:
+  # https://github.com/Kaggle/kagglehub/blob/main/README.md#kaggledatasetadapterpandas
+)
+
+# Set the path to the file you'd like to load
+file_path = ""
+
+# Load the latest version
+computerGamesDataset = kagglehub.load_dataset(
+  KaggleDatasetAdapter.PANDAS,
+  "iamsouravbanerjee/computer-games-dataset",
+  file_path,
+  # Provide any additional arguments like 
+  # sql_query or pandas_kwargs. See the 
+  # documenation for more information:
+  # https://github.com/Kaggle/kagglehub/blob/main/README.md#kaggledatasetadapterpandas
+)
+
+```
+
+
+
+
+
+
+
+```{r codeAppendix, ref.label=knitr::all_labels(), echo=TRUE, eval=FALSE}
+```
