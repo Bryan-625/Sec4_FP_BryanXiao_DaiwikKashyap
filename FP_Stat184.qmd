@@ -9,7 +9,7 @@ editor: visual
 ---
 
 ```{r}
-#| label: Libraries
+#| label: Libraries & Datasets
 #| echo: false
 #| message: false
 # Loading Libraries
@@ -21,44 +21,20 @@ library(knitr)
 library(tinytex)
 
 # Loading Datasets
-import kagglehub
-from kagglehub import KaggleDatasetAdapter
-
-# Set the path to the file you'd like to load
-file_path = ""
-
-# Load the latest version
-mostPlayedDataset = kagglehub.load_dataset(
-  KaggleDatasetAdapter.PANDAS,
-  "faisaljanjua0555/most-played-games-of-all-time",
-  file_path,
-  # Provide any additional arguments like 
-  # sql_query or pandas_kwargs. See the 
-  # documenation for more information:
-  # https://github.com/Kaggle/kagglehub/blob/main/README.md#kaggledatasetadapterpandas
-)
-
-# Set the path to the file you'd like to load
-file_path = ""
-
-# Load the latest version
-computerGamesDataset = kagglehub.load_dataset(
-  KaggleDatasetAdapter.PANDAS,
-  "iamsouravbanerjee/computer-games-dataset",
-  file_path,
-  # Provide any additional arguments like 
-  # sql_query or pandas_kwargs. See the 
-  # documenation for more information:
-  # https://github.com/Kaggle/kagglehub/blob/main/README.md#kaggledatasetadapterpandas
-)
-
+data <- read.csv("~/GitHub/Sec4_FP_BryanXiao_DaiwikKashyap/data/data.csv", header=TRUE, row.names=1)
+steam <- read.csv("~/GitHub/Sec4_FP_BryanXiao_DaiwikKashyap/data/steam.csv")
 ```
 
+```{r}
+#| label: Data Wrangling
+#| echo: false
+#| message: false
 
+data$All_time.peak <- as.numeric(as.character(data$All_time.peak))
+data_tidy <- data %>% 
+  arrange(desc(All_time.peak), .by_group = TRUE)
 
-
-
-
+```
 
 ```{r codeAppendix, ref.label=knitr::all_labels(), echo=TRUE, eval=FALSE}
 ```
