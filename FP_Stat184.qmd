@@ -19,6 +19,7 @@ library(ggplot2)
 library(dcData)
 library(knitr)
 library(tinytex)
+library(stringr)
 
 # Loading Datasets
 data <- read.csv("~/GitHub/Sec4_FP_BryanXiao_DaiwikKashyap/data/data.csv", header=TRUE, row.names=1)
@@ -30,9 +31,21 @@ steam <- read.csv("~/GitHub/Sec4_FP_BryanXiao_DaiwikKashyap/data/steam.csv")
 #| echo: false
 #| message: false
 
+data <- data %>%
+  rename(name = Name)
+
+data$All_time.peak <- str_replace_all(data$All_time.peak, ",", "")
 data$All_time.peak <- as.numeric(as.character(data$All_time.peak))
+
 data_tidy <- data %>% 
-  arrange(desc(All_time.peak), .by_group = TRUE)
+  arrange(desc(All_time.peak), .by_group = TRUE) %>%
+  slice(1:200)
+
+MergedData <- merge(steam, data)
+
+merged_data_tidy <- MergedData %>% 
+  arrange(desc(All_time.peak), .by_group = TRUE) %>%
+  slice(1:200)
 
 ```
 
