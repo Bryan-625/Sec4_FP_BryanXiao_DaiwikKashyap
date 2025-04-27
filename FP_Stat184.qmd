@@ -31,21 +31,30 @@ steam <- read.csv("~/GitHub/Sec4_FP_BryanXiao_DaiwikKashyap/data/steam.csv")
 #| echo: false
 #| message: false
 
-data <- data %>%
-  rename(name = Name)
+MostPlayedDataset <- read.csv("~/GitHub/Sec4_FP_BryanXiao_DaiwikKashyap/data/data.csv", header=TRUE, row.names=1)
+SteamStoreDataset <- read.csv("~/GitHub/Sec4_FP_BryanXiao_DaiwikKashyap/data/steam.csv")
 
-data$All_time.peak <- str_replace_all(data$All_time.peak, ",", "")
-data$All_time.peak <- as.numeric(as.character(data$All_time.peak))
+MostPlayedDataset$All_time.peak <- str_replace_all(MostPlayedDataset$All_time.peak, ",", "")
+MostPlayedDataset$All_time.peak <- as.numeric(as.character(MostPlayedDataset$All_time.peak))
 
-data_tidy <- data %>% 
+SteamStoreDataset <- SteamStoreDataset %>%
+  rename(Name = name)
+
+MergedData <- merge(SteamStoreDataset, MostPlayedDataset)
+
+MergedDataTidy <- MergedData %>% 
   arrange(desc(All_time.peak), .by_group = TRUE) %>%
-  slice(1:200)
-
-MergedData <- merge(steam, data)
-
-merged_data_tidy <- MergedData %>% 
-  arrange(desc(All_time.peak), .by_group = TRUE) %>%
-  slice(1:200)
+  select("Name", "genres", "All_time.peak") %>%
+  rename(
+    Genres = genres,
+    All_Time_Peak = All_time.peak
+  ) %>%
+  slice(1:200) %>%
+  separate(
+    col = "Genres",
+    sep = ";",
+    into = c("Genre 1", "Genre 2", "Genre 3")
+  )
 
 ```
 
