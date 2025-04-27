@@ -9,7 +9,7 @@ editor: visual
 ---
 
 ```{r}
-#| label: Libraries
+#| label: Libraries & Datasets
 #| echo: false
 #| message: false
 # Loading Libraries
@@ -19,46 +19,44 @@ library(ggplot2)
 library(dcData)
 library(knitr)
 library(tinytex)
+library(stringr)
 
 # Loading Datasets
-import kagglehub
-from kagglehub import KaggleDatasetAdapter
-
-# Set the path to the file you'd like to load
-file_path = ""
-
-# Load the latest version
-mostPlayedDataset = kagglehub.load_dataset(
-  KaggleDatasetAdapter.PANDAS,
-  "faisaljanjua0555/most-played-games-of-all-time",
-  file_path,
-  # Provide any additional arguments like 
-  # sql_query or pandas_kwargs. See the 
-  # documenation for more information:
-  # https://github.com/Kaggle/kagglehub/blob/main/README.md#kaggledatasetadapterpandas
-)
-
-# Set the path to the file you'd like to load
-file_path = ""
-
-# Load the latest version
-computerGamesDataset = kagglehub.load_dataset(
-  KaggleDatasetAdapter.PANDAS,
-  "iamsouravbanerjee/computer-games-dataset",
-  file_path,
-  # Provide any additional arguments like 
-  # sql_query or pandas_kwargs. See the 
-  # documenation for more information:
-  # https://github.com/Kaggle/kagglehub/blob/main/README.md#kaggledatasetadapterpandas
-)
-
+data <- read.csv("~/GitHub/Sec4_FP_BryanXiao_DaiwikKashyap/data/data.csv", header=TRUE, row.names=1)
+steam <- read.csv("~/GitHub/Sec4_FP_BryanXiao_DaiwikKashyap/data/steam.csv")
 ```
 
+```{r}
+#| label: Data Wrangling
+#| echo: false
+#| message: false
 
+MostPlayedDataset <- read.csv("~/GitHub/Sec4_FP_BryanXiao_DaiwikKashyap/data/data.csv", header=TRUE, row.names=1)
+SteamStoreDataset <- read.csv("~/GitHub/Sec4_FP_BryanXiao_DaiwikKashyap/data/steam.csv")
 
+MostPlayedDataset$All_time.peak <- str_replace_all(MostPlayedDataset$All_time.peak, ",", "")
+MostPlayedDataset$All_time.peak <- as.numeric(as.character(MostPlayedDataset$All_time.peak))
 
+SteamStoreDataset <- SteamStoreDataset %>%
+  rename(Name = name)
 
+MergedData <- merge(SteamStoreDataset, MostPlayedDataset)
 
+MergedDataTidy <- MergedData %>% 
+  arrange(desc(All_time.peak), .by_group = TRUE) %>%
+  select("Name", "genres", "All_time.peak") %>%
+  rename(
+    Genres = genres,
+    All_Time_Peak = All_time.peak
+  ) %>%
+  slice(1:200) %>%
+  separate(
+    col = "Genres",
+    sep = ";",
+    into = c("Genre 1", "Genre 2", "Genre 3")
+  )
+
+```
 
 ```{r codeAppendix, ref.label=knitr::all_labels(), echo=TRUE, eval=FALSE}
 ```
