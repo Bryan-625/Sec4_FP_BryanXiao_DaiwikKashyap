@@ -1,7 +1,7 @@
 ---
 title: "FP_Stat184"
 author: "Bryan Xiao, Daiwik Kashyap"
-format: 
+format:
   pdf:
     embed-resources: true
     toc: true
@@ -9,10 +9,10 @@ editor: visual
 ---
 
 ```{r}
-#| label: Libraries & Datasets
-#| echo: false
+#| label: librariesAndData
+#| echo: true
 #| message: false
-# Loading Libraries
+# Load necessary libraries
 library(tidyverse)
 library(googlesheets4)
 library(ggplot2)
@@ -20,26 +20,27 @@ library(dcData)
 library(knitr)
 library(tinytex)
 library(stringr)
+library(scales)
 
-# Loading Datasets
-data <- read.csv("~/GitHub/Sec4_FP_BryanXiao_DaiwikKashyap/data/data.csv", header=TRUE, row.names=1)
-steam <- read.csv("~/GitHub/Sec4_FP_BryanXiao_DaiwikKashyap/data/steam.csv")
+# Load datasets
+MostPlayedDataset <- read.csv("~/GitHub/Sec4_FP_BryanXiao_DaiwikKashyap/data/data.csv",
+                              header=TRUE, row.names=1)
+SteamStoreDataset <- read.csv("~/GitHub/Sec4_FP_BryanXiao_DaiwikKashyap/data/steam.csv")
 ```
 
+# Data Wrangling
+
+We cleaned and merged the datasets Steam Store Games and Most Played Games of All Time, and isolated the top 200 games based on peak players.
+
 ```{r}
-#| label: Data Wrangling
-#| echo: false
-#| message: false
-
-MostPlayedDataset <- read.csv("~/GitHub/Sec4_FP_BryanXiao_DaiwikKashyap/data/data.csv", header=TRUE, row.names=1)
-SteamStoreDataset <- read.csv("~/GitHub/Sec4_FP_BryanXiao_DaiwikKashyap/data/steam.csv")
-
+# Wrangle most played dataset
 MostPlayedDataset$All_time.peak <- str_replace_all(MostPlayedDataset$All_time.peak, ",", "")
 MostPlayedDataset$All_time.peak <- as.numeric(as.character(MostPlayedDataset$All_time.peak))
 
-SteamStoreDataset <- SteamStoreDataset %>%
-  rename(Name = name)
+# Clean Steam store data
+SteamStoreDataset <- SteamStoreDataset %>% rename(Name = name)
 
+# Merge datasets and tidy
 MergedData <- merge(SteamStoreDataset, MostPlayedDataset)
 
 MergedDataTidy <- MergedData %>% 
@@ -53,10 +54,72 @@ MergedDataTidy <- MergedData %>%
   separate(
     col = "Genres",
     sep = ";",
-    into = c("Genre 1", "Genre 2", "Genre 3")
+    into = c("Genre 1", "Genre 2", "Genre 3"),
+    fill = "right"
   )
-
 ```
 
-```{r codeAppendix, ref.label=knitr::all_labels(), echo=TRUE, eval=FALSE}
+# Visualizations
+
+## Top 10 Most Played Steam Games
+
+```{r}
+Top10Games <- MergedDataTidy %>% arrange(desc(All_Time_Peak)) %>% slice(1:10)
+
+ggplot(Top10Games, aes(x = reorder(Name, All_Time_Peak), y = All_Time_Peak)) +
+  geom_col(fill = "steelblue") +
+  coord_flip() +
+  labs(title = "Top 10 Most Played Steam Games",
+       x = "Game",
+       y = "All Time Peak Players") +
+  scale_y_continuous(labels = comma) +
+  theme_minimal() +
+  theme(plot.title = element_text(hjust = 0.5))
 ```
+
+## Count of Games by Primary Genre
+
+```{r}
+ggplot(MergedDataTidy, aes(x = `Genre 1`)) +
+  geom_bar(fill = "darkgreen") +
+  coord_flip() +
+  labs(title = "Count of Games by Primary Genre",
+       x = "Primary Genre",
+       y = "Number of Games") +
+  theme_minimal() +
+  theme(plot.title = element_text(hjust = 0.5))
+```
+
+## Peak Player Distribution by Genre
+
+```{r}
+FilteredGenres <- MergedDataTidy %>% filter(!is.na(`Genre 1`))
+
+ggplot(FilteredGenres, aes(x = `Genre 1`, y = All_Time_Peak)) +
+  geom_boxplot(fill = "orange", outlier.color = "red") +
+  coord_flip() +
+  labs(title = "Peak Player Distribution by Primary Genre",
+       x = "Primary Genre",
+       y = "All Time Peak Players") +
+  scale_y_continuous(labels = comma) +
+  theme_minimal() +
+  theme(plot.title = element_text(hjust = 0.5))
+```
+
+# Conclusion
+
+The Steam gaming reveals multiple intriguing patterns which become visible through visual analysis. Firstly,
+
+The Top  10 Most Played Games chart shows Counter-Strike: Global Offensive and Dota 2 as top games  which sustain more than one million peak concurrent players.
+
+The data shows competitive multiplayer games remain popular throughout time  according to this information.
+
+The Genre Count chart reveals that Action and Indie genres make up the biggest collection  of available Steam titles. The tools which allow indie developers to develop and distribute games in these genres could  be the reason for this situation.
+
+The Peak Players by Genre boxplot reveals that user engagement levels differ  substantially between different genres. Free to Play and Action games achieve the highest player count peaks compared to all  other genres but Nudity and Animation & Modeling genres show very low user engagement.
+
+The data reveals  that genre selection acts as a strong indicator to determine both audience size and user participation levels.
+
+This analysis gives us  a current view of Steam user preferences together with publishing behavior on the platform. The analysis provides important knowledge  about game development and marketing strategies as well as user conduct patterns.
+
+Thank you for taking the time to explore our analysis!
