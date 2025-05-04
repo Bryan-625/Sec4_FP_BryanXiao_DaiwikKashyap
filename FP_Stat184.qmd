@@ -13,6 +13,7 @@ editor: visual
 #| echo: true
 #| message: false
 # Load necessary libraries
+library(tidytext)
 library(tidyverse)
 library(googlesheets4)
 library(ggplot2)
@@ -33,6 +34,9 @@ SteamStoreDataset <- read.csv("~/GitHub/Sec4_FP_BryanXiao_DaiwikKashyap/data/ste
 We cleaned and merged the datasets Steam Store Games and Most Played Games of All Time, and isolated the top 200 games based on peak players.
 
 ```{r}
+#| label: dataWrangling
+#| echo: true
+#| message: false
 # Wrangle most played dataset
 MostPlayedDataset$All_time.peak <- str_replace_all(MostPlayedDataset$All_time.peak, ",", "")
 MostPlayedDataset$All_time.peak <- as.numeric(as.character(MostPlayedDataset$All_time.peak))
@@ -50,7 +54,7 @@ MergedDataTidy <- MergedData %>%
     Genres = genres,
     All_Time_Peak = All_time.peak
   ) %>%
-  slice(1:200) %>%
+  slice(1:400) %>%
   separate(
     col = "Genres",
     sep = ";",
@@ -64,6 +68,10 @@ MergedDataTidy <- MergedData %>%
 ## Top 10 Most Played Steam Games
 
 ```{r}
+#| label: top10PlayedGames
+#| echo: true
+#| message: false
+
 Top10Games <- MergedDataTidy %>% arrange(desc(All_Time_Peak)) %>% slice(1:10)
 
 ggplot(Top10Games, aes(x = reorder(Name, All_Time_Peak), y = All_Time_Peak)) +
@@ -80,30 +88,84 @@ ggplot(Top10Games, aes(x = reorder(Name, All_Time_Peak), y = All_Time_Peak)) +
 ## Count of Games by Primary Genre
 
 ```{r}
-ggplot(MergedDataTidy, aes(x = `Genre 1`)) +
-  geom_bar(fill = "darkgreen") +
-  coord_flip() +
-  labs(title = "Count of Games by Primary Genre",
-       x = "Primary Genre",
-       y = "Number of Games") +
-  theme_minimal() +
-  theme(plot.title = element_text(hjust = 0.5))
+Top10Genres <- MergedDataTidy %>%
+  pivot_longer(cols = starts_with("Genre"), names_to = "GenreType", values_to = "Genre") %>%
+  filter(!is.na(Genre)) %>%
+  count(Genre, sort = TRUE) %>%
+  slice(1:10)
+
 ```
 
-## Peak Player Distribution by Genre
+```{r}
+#| label: top10Genres
+#| echo: true
+#| message: false
+
+
+ggplot(Top10Genres, aes(x = reorder(Genre, n), y = n)) +
+  geom_col(fill = "darkgreen") +
+  coord_flip() +
+  labs(
+    title = "Top 10 Most Common Genres",
+    x = "Genre",
+    y = "Number of Games"
+  ) +
+  theme_minimal()
+
+```
+
+## Sub-Genres in Action
+
+Shows the sub genres of action games
 
 ```{r}
-FilteredGenres <- MergedDataTidy %>% filter(!is.na(`Genre 1`))
+#| label: subGenreMergeData
+#| echo: true
+#| message: false
 
-ggplot(FilteredGenres, aes(x = `Genre 1`, y = All_Time_Peak)) +
-  geom_boxplot(fill = "orange", outlier.color = "red") +
-  coord_flip() +
-  labs(title = "Peak Player Distribution by Primary Genre",
-       x = "Primary Genre",
-       y = "All Time Peak Players") +
-  scale_y_continuous(labels = comma) +
+
+# Prepare a subset with only top 3 genres
+TopGenres <- c("Indie", "Action", "Adventure")
+
+# Filter and explode tags
+TopSubGenres <- MergedData %>%
+  filter(str_detect(genres, paste(TopGenres, collapse = "|"))) %>%
+  select(Name, genres, steamspy_tags) %>%
+  separate_rows(genres, sep = ";") %>%
+  filter(genres %in% TopGenres) %>%
+  separate_rows(steamspy_tags, sep = ";") %>%
+  filter(steamspy_tags != "") %>%
+  group_by(genres, steamspy_tags) %>%
+  summarise(count = n(), .groups = "drop") %>%
+  arrange(genres, desc(count)) %>%
+  group_by(genres) %>%
+  slice_max(count, n = 5)  # top 5 sub-genres for each genre
+
+```
+
+
+```{r}
+#| label: topSubGeners
+#| echo: true
+#| message: false
+
+
+ggplot(TopSubGenres, aes(x = genres, y = count, fill = steamspy_tags)) +
+  geom_col() +
+  coord_flip() +  # ← Flip axes
+  labs(
+    title = "Top 5 Sub-Genres Within Top 3 Genres",
+    x = "Primary Genre",
+    y = "Number of Games",
+    fill = "Sub-Genre Tags"
+  ) +
   theme_minimal() +
-  theme(plot.title = element_text(hjust = 0.5))
+  theme(
+    plot.title = element_text(hjust = 0.5),
+    axis.title.x = element_text(face = "bold"),
+    axis.title.y = element_text(face = "bold")
+  )
+
 ```
 
 # Conclusion
