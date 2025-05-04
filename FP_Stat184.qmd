@@ -23,8 +23,7 @@ library(stringr)
 library(scales)
 
 # Load datasets
-MostPlayedDataset <- read.csv("~/GitHub/Sec4_FP_BryanXiao_DaiwikKashyap/data/data.csv",
-                              header=TRUE, row.names=1)
+MostPlayedDataset <- read.csv("~/GitHub/Sec4_FP_BryanXiao_DaiwikKashyap/data/data.csv",header=TRUE,row.names=)
 SteamStoreDataset <- read.csv("~/GitHub/Sec4_FP_BryanXiao_DaiwikKashyap/data/steam.csv")
 ```
 
@@ -33,30 +32,38 @@ SteamStoreDataset <- read.csv("~/GitHub/Sec4_FP_BryanXiao_DaiwikKashyap/data/ste
 We cleaned and merged the datasets Steam Store Games and Most Played Games of All Time, and isolated the top 200 games based on peak players.
 
 ```{r}
+#| label: dataWrangling
+#| echo: true
+#| message: false
 # Wrangle most played dataset
 MostPlayedDataset$All_time.peak <- str_replace_all(MostPlayedDataset$All_time.peak, ",", "")
 MostPlayedDataset$All_time.peak <- as.numeric(as.character(MostPlayedDataset$All_time.peak))
-
-# Clean Steam store data
-SteamStoreDataset <- SteamStoreDataset %>% rename(Name = name)
 
 # Merge datasets and tidy
 MergedData <- merge(SteamStoreDataset, MostPlayedDataset)
 
 MergedDataTidy <- MergedData %>% 
   arrange(desc(All_time.peak), .by_group = TRUE) %>%
-  select("Name", "genres", "All_time.peak") %>%
+  select("Name", "genres", "All_time.peak", "positive_ratings", "negative_ratings") %>%
   rename(
     Genres = genres,
-    All_Time_Peak = All_time.peak
+    All_Time_Peak = All_time.peak,
+    Positive_Ratings = positive_ratings,
+    Negative_Ratings = negative_ratings
   ) %>%
-  slice(1:200) %>%
   separate(
     col = "Genres",
     sep = ";",
     into = c("Genre 1", "Genre 2", "Genre 3"),
     fill = "right"
   )
+
+write.csv(
+  MergedDataTidy,
+  file = "Cleaned_Data.csv",
+  row.names = TRUE
+)
+
 ```
 
 # Visualizations
@@ -64,6 +71,9 @@ MergedDataTidy <- MergedData %>%
 ## Top 10 Most Played Steam Games
 
 ```{r}
+#| label: top10Games
+#| echo: true
+#| message: false
 Top10Games <- MergedDataTidy %>% arrange(desc(All_Time_Peak)) %>% slice(1:10)
 
 ggplot(Top10Games, aes(x = reorder(Name, All_Time_Peak), y = All_Time_Peak)) +
@@ -80,6 +90,9 @@ ggplot(Top10Games, aes(x = reorder(Name, All_Time_Peak), y = All_Time_Peak)) +
 ## Count of Games by Primary Genre
 
 ```{r}
+#| label: countingGameGenres
+#| echo: true
+#| message: false
 ggplot(MergedDataTidy, aes(x = `Genre 1`)) +
   geom_bar(fill = "darkgreen") +
   coord_flip() +
@@ -93,6 +106,9 @@ ggplot(MergedDataTidy, aes(x = `Genre 1`)) +
 ## Peak Player Distribution by Genre
 
 ```{r}
+#| label: playerDistributionByGenre
+#| echo: true
+#| message: false
 FilteredGenres <- MergedDataTidy %>% filter(!is.na(`Genre 1`))
 
 ggplot(FilteredGenres, aes(x = `Genre 1`, y = All_Time_Peak)) +
@@ -104,6 +120,34 @@ ggplot(FilteredGenres, aes(x = `Genre 1`, y = All_Time_Peak)) +
   scale_y_continuous(labels = comma) +
   theme_minimal() +
   theme(plot.title = element_text(hjust = 0.5))
+```
+
+```{r}
+#| label: reviewsVsPlayerCount
+#| echo: true
+#| message: false
+MergedDataReviews <- MergedDataTidy %>% 
+  slice(1:400) %>%
+  select(Name, All_Time_Peak, Positive_Ratings, Negative_Ratings) %>%
+  mutate(
+    PercentageOfPositiveReviews = Positive_Ratings / (Negative_Ratings + Positive_Ratings) * 100
+  )
+ggplot(
+  data = MergedDataReviews,
+  mapping = aes(
+    x = All_Time_Peak,
+    y = PercentageOfPositiveReviews
+  )
+) + geom_point(size = 3) +
+  geom_smooth(method = "lm") +
+  labs(
+    x = "All Time Peak",
+    y = "Percentage of Positive Reviews",
+    title = "Percentage of Positive Reviews vs All Time Peak"
+  ) + scale_x_continuous(labels = comma) +
+  scale_y_continuous(labels = comma) +
+  theme_bw()
+
 ```
 
 # Conclusion
@@ -123,3 +167,6 @@ The data reveals  that genre selection acts as a strong indicator to determine b
 This analysis gives us  a current view of Steam user preferences together with publishing behavior on the platform. The analysis provides important knowledge  about game development and marketing strategies as well as user conduct patterns.
 
 Thank you for taking the time to explore our analysis!
+
+```{r codeAppend, ref.label=knitr::all_labels(), echo=TRUE, eval=FALSE}
+```
