@@ -13,6 +13,7 @@ editor: visual
 #| echo: true
 #| message: false
 # Load necessary libraries
+library(tidytext)
 library(tidyverse)
 library(googlesheets4)
 library(ggplot2)
@@ -51,6 +52,7 @@ MergedDataTidy <- MergedData %>%
     Positive_Ratings = positive_ratings,
     Negative_Ratings = negative_ratings
   ) %>%
+  slice(1:400) %>%
   separate(
     col = "Genres",
     sep = ";",
@@ -103,23 +105,75 @@ ggplot(MergedDataTidy, aes(x = `Genre 1`)) +
   theme(plot.title = element_text(hjust = 0.5))
 ```
 
-## Peak Player Distribution by Genre
-
 ```{r}
-#| label: playerDistributionByGenre
+#| label: top10Genres
 #| echo: true
 #| message: false
-FilteredGenres <- MergedDataTidy %>% filter(!is.na(`Genre 1`))
 
-ggplot(FilteredGenres, aes(x = `Genre 1`, y = All_Time_Peak)) +
-  geom_boxplot(fill = "orange", outlier.color = "red") +
+
+ggplot(Top10Genres, aes(x = reorder(Genre, n), y = n)) +
+  geom_col(fill = "darkgreen") +
   coord_flip() +
-  labs(title = "Peak Player Distribution by Primary Genre",
-       x = "Primary Genre",
-       y = "All Time Peak Players") +
-  scale_y_continuous(labels = comma) +
+  labs(
+    title = "Top 10 Most Common Genres",
+    x = "Genre",
+    y = "Number of Games"
+  ) +
+  theme_minimal()
+
+```
+
+## Sub-Genres in Action
+
+Shows the sub genres of action games
+
+```{r}
+#| label: subGenreMergeData
+#| echo: true
+#| message: false
+
+# Prepare a subset with only top 3 genres
+TopGenres <- c("Indie", "Action", "Adventure")
+
+# Filter and explode tags
+TopSubGenres <- MergedData %>%
+  filter(str_detect(genres, paste(TopGenres, collapse = "|"))) %>%
+  select(Name, genres, steamspy_tags) %>%
+  separate_rows(genres, sep = ";") %>%
+  filter(genres %in% TopGenres) %>%
+  separate_rows(steamspy_tags, sep = ";") %>%
+  filter(steamspy_tags != "") %>%
+  group_by(genres, steamspy_tags) %>%
+  summarise(count = n(), .groups = "drop") %>%
+  arrange(genres, desc(count)) %>%
+  group_by(genres) %>%
+  slice_max(count, n = 5)  # top 5 sub-genres for each genre
+
+```
+
+
+```{r}
+#| label: topSubGeners
+#| echo: true
+#| message: false
+
+
+ggplot(TopSubGenres, aes(x = genres, y = count, fill = steamspy_tags)) +
+  geom_col() +
+  coord_flip() +  # ← Flip axes
+  labs(
+    title = "Top 5 Sub-Genres Within Top 3 Genres",
+    x = "Primary Genre",
+    y = "Number of Games",
+    fill = "Sub-Genre Tags"
+  ) +
   theme_minimal() +
-  theme(plot.title = element_text(hjust = 0.5))
+  theme(
+    plot.title = element_text(hjust = 0.5),
+    axis.title.x = element_text(face = "bold"),
+    axis.title.y = element_text(face = "bold")
+  )
+
 ```
 
 ```{r}
