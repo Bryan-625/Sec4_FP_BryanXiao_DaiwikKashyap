@@ -13,6 +13,7 @@ editor: visual
 #| echo: false
 #| message: false
 # Load necessary libraries
+# Our Style Guide was to have the labels of each of our code chunks to be written in camelCase, while all variable/data frames were written with UppercaseCamelCase. We would also have function names be written in all uppercase. Each code chunk would end with an empty line to make sure that the graph didn't bleed into the narrative text.
 library(tidytext)
 library(tidyverse)
 library(googlesheets4)
@@ -161,26 +162,9 @@ Top10Genres <- MergedDataTidy %>%
 ```
 
 ```{r}
-#| label: countingGameGenres
-#| echo: false
-#| message: false
-# Making the horizontal bar graph for counts of genres
-ggplot(MergedDataTidy, aes(x = `Genre 1`)) +
-  geom_bar(fill = "darkgreen") +
-  coord_flip() +
-  labs(title = "Count of Games by Primary Genre",
-       x = "Primary Genre",
-       y = "Number of Games") +
-  theme_minimal() +
-  theme(plot.title = element_text(hjust = 0.5))
-
-```
-
-```{r}
 #| label: top10Genres
 #| echo: false
 #| message: false
-
 
 ggplot(Top10Genres, aes(x = reorder(Genre, n), y = n)) +
   geom_col(fill = "darkgreen") +
@@ -250,7 +234,7 @@ ggplot(TopSubGenres, aes(x = genres, y = count, fill = steamspy_tags)) +
 Another thing we wanted to explore was whether a higher reception, which would be taking number of positive reviews and dividing it by the sum of positive reviews and negative reviews, and comparing it to the peak player count. Steam only uses a binary system for its review system, so while we would have liked to have a more naunced way to calculate reception, it simply is not possible. We decided after looking at the initial graph to exclude the top 2 games, since their player count expanded out the x-axis so much that it made reading the graph difficult. We hypothesized that the higher reception a game had, the higher its peak player count would be. Our thought process was that a higher reception would make more people recommend the game, which would cause a positive feedback loop. However, our graph only showed a slightly positive relationship between the peak player count and its reception.
 
 ```{r}
-#| label: reviewsVsPopularity
+#| label: dataWranglingForReviews
 #| echo: false
 #| message: false
 MergedDataReviews <- MergedDataTidy %>% 
@@ -259,6 +243,13 @@ MergedDataReviews <- MergedDataTidy %>%
   mutate(
     PercentageOfPositiveReviews = Positive_Ratings / (Negative_Ratings + Positive_Ratings) * 100
   )
+
+```
+
+```{r}
+#| label: reviewsVsPopularity
+#| echo: false
+#| message: false
 ggplot(
   data = MergedDataReviews,
   mapping = aes(
@@ -282,6 +273,12 @@ ggplot(
 Throughout our analysis, we wanted to find any similarities and/or trends in the most popular Steam games. From our analysis, we found that action, adventure, and indie games seemed to draw in the most players. Our analysis also found that player reception is not as important as we initially hypothesized. It only showed a slightly positive relationship between the two variables.
 
 Thank you for taking the time to explore our analysis!
+
+# Sources
+
+Most Played Games of All Time. (n.d.). *Kaggle.* Retrieved May 3, 2025, from <https://www.kaggle.com/datasets/faisaljanjua0555/most-played-games-of-all-time>
+
+Steam Store Games (Clean dataset). (n.d). *Kaggle* Retrieved May 3, 2025, from <https://www.kaggle.com/datasets/nikdavis/steam-store-games>
 
 ```{r codeAppend, ref.label=knitr::all_labels(), echo=TRUE, eval=FALSE}
 ```
