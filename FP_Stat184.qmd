@@ -10,7 +10,7 @@ editor: visual
 
 ```{r}
 #| label: librariesAndData
-#| echo: true
+#| echo: false
 #| message: false
 # Load necessary libraries
 library(tidytext)
@@ -28,17 +28,69 @@ MostPlayedDataset <- read.csv("~/GitHub/Sec4_FP_BryanXiao_DaiwikKashyap/data/dat
 SteamStoreDataset <- read.csv("~/GitHub/Sec4_FP_BryanXiao_DaiwikKashyap/data/steam.csv")
 ```
 
-# Data Wrangling
+# Introduction
 
-We cleaned and merged the datasets Steam Store Games and Most Played Games of All Time, and isolated the top 200 games based on peak players.
+Playing video games has become a global pastime over the last couple of years, especially during the COV-19 pandemic. In this project, we wanted to look at what similarities and trends we could find in the most popular Steam games. When defining what is a most popular game, we would have liked to use popularity over time, but we could only find reliable data that captured a game's player count for one specific 24 hour period and the game's peak player count. We decided to use the peak player count to determine a game's popularity. Our thought process was that the peak player count meant that there was a large influx of people at one point that were willing to play this game. It was likely in our mind that if so many people were playing this game that it had something that just clicked with people.
+
+Questions to Explore: 1. What genres were the most popular? 2. Does a more positively reviewed game influence the popularity of a game?
+
+# Data Provenance
+
+For this project, we used two datasets to explore the trends in the most popular Steam games.The datasets were curated from Kaggle and used Steam's Web APIs to gather data from Steam's official servers. These two datasets were combined to produce the final dataset.
+
+## Primary Dataset
+
+Source: Kaggle Description: The primary dataset contains detailed information for Steam Games, including number of positive and negative reviews along with the genres of the game. It has 27,000 rows and 18 columns. Purpose: This dataset was collected to gain a record of games released before and around May 2019. Case: Each row represents an unique game with columns containing information related to the game.
+
+## Secondary Dataset
+
+Source: Kaggle Description: The secondary dataset contains information related to the player counts of the 5,000 most played games on Steam. Purpose: This dataset was collected to provide insight in player counts for a variety of Steam games. Case: Each row represents an unique game with columns relating to player counts.
+
+## Data Wrangling
+
+We cleaned and merged the two datasets, Steam Store Games and Most Played Games of All Time, and isolated the top 400 games based on peak players. They were merged using the name column in our primary dataset and the Name column in our secondary dataset. Afterwards, we selected the relevant columns like Name, Genres, All Time Peak, Positive Ratings, and Negative Ratings. We decided to use only the top 400 games as once you go below that, their peak player count goes below what we considered popular.
+
+## Final Dataset
+
+Description: This final dataset is a dataset that merges the primary and secondary datasets and selects the relevant variables for our analysis. It has 400 rows with 5 columns, which are the relevant variables we want to need to answer our questions. Purpose: This dataset makes it easier for us to analyze common factors across popular Steam games. Case: Each row represents a game with columms relating to its peak player count, genre, and reviews.
+
+# FAIR Principles
+
+The datasets that we used adhere to the FAIR principles.
+
+## Findable
+
+Both datasets are sourced from Kaggle, which is a well-known platform for datasets,
+
+## Accessible
+
+Both datasets are openly available for download on Kaggle, which is a well-known and reliable platform for data.
+
+## Interoperable
+
+The datasets are formatted as csv files, which is an universally accepted format for most data analysis tools.
+
+## Reusable
+
+The datasets come with clear explanations of what each column is supposed to contain, making it easier for others to use the datasets for their own analysis. By cleaning and tidying the final dataset, we hope that other people may be able to find patterns that we may have missed.
+
+# CARE Principles
+
+Our data doesn't include any personal or sensitive information, but we did want to maintain ethical standards throughout our project. The datasets are made up of public data available through Steam and our analysis was done with fairness and collective benefit. We also want to make sure that our interpretations of the data are responsible.
 
 ```{r}
 #| label: dataWrangling
-#| echo: true
+#| echo: false
 #| message: false
-# Wrangle most played dataset
+# Wrangle Most Played dataset
 MostPlayedDataset$All_time.peak <- str_replace_all(MostPlayedDataset$All_time.peak, ",", "")
 MostPlayedDataset$All_time.peak <- as.numeric(as.character(MostPlayedDataset$All_time.peak))
+
+# Making sure SteamStoreDataset and MostPlayedDataset have a common column
+SteamStoreDataset <- SteamStoreDataset %>%
+  rename(
+    Name = name
+  )
 
 # Merge datasets and tidy
 MergedData <- merge(SteamStoreDataset, MostPlayedDataset)
@@ -60,21 +112,23 @@ MergedDataTidy <- MergedData %>%
     fill = "right"
   )
 
-write.csv(
-  MergedDataTidy,
-  file = "Cleaned_Data.csv",
-  row.names = TRUE
-)
+# Saving merged dataset as CSV file
+#write.csv(
+#  MergedDataTidy,
+#  file = "cleanedData.csv",
+#  row.names = TRUE
+#)
 
 ```
 
 # Visualizations
 
 ## Top 10 Most Played Steam Games
+When we were doing our Exploratory Data Analysis, we noticed that there was a huge disparity in peak players between games, even among the top 10 games. The graph below was made to try to visualize the gap in peak player count between the first two games, Counter Strike: Global Offensive and Dota 2, compared to the rest of the top 10 games. The key insight that we want the reader to take away from this graph is that peak player count can have a pretty big gap. This will be something to keep in mind for a graph later on.
 
 ```{r}
 #| label: top10Games
-#| echo: true
+#| echo: false
 #| message: false
 Top10Games <- MergedDataTidy %>% arrange(desc(All_Time_Peak)) %>% slice(1:10)
 
@@ -87,14 +141,30 @@ ggplot(Top10Games, aes(x = reorder(Name, All_Time_Peak), y = All_Time_Peak)) +
   scale_y_continuous(labels = comma) +
   theme_minimal() +
   theme(plot.title = element_text(hjust = 0.5))
+
 ```
 
 ## Count of Games by Primary Genre
+This graph is displaying the amount of games that are listed under their primary genre. You will notice that Action, Adventure, and Indie dominated the number of games with one of the three as their primary genre. So this suggests that these genres may contain something that draws people in. Our first thought was that these genres are the most exciting, since action and adventure would put the player in control of doing something. However, we weren't able to explain why indie was among the top 3 genres. Indie is a shorthand term for independent, usually in reference to a single developer or a small team without support from a large publisher.
+
+```{r}
+#| label: top10GenresWrangling
+#| echo: false
+#| message: false
+# Totaling the genres for each game
+Top10Genres <- MergedDataTidy %>%
+  pivot_longer(cols = starts_with("Genre"), names_to = "GenreType", values_to = "Genre") %>%
+  filter(!is.na(Genre)) %>%
+  count(Genre, sort = TRUE) %>%
+  slice(1:10)
+
+```
 
 ```{r}
 #| label: countingGameGenres
-#| echo: true
+#| echo: false
 #| message: false
+# Making the horizontal bar graph for counts of genres
 ggplot(MergedDataTidy, aes(x = `Genre 1`)) +
   geom_bar(fill = "darkgreen") +
   coord_flip() +
@@ -103,11 +173,12 @@ ggplot(MergedDataTidy, aes(x = `Genre 1`)) +
        y = "Number of Games") +
   theme_minimal() +
   theme(plot.title = element_text(hjust = 0.5))
+
 ```
 
 ```{r}
 #| label: top10Genres
-#| echo: true
+#| echo: false
 #| message: false
 
 
@@ -123,13 +194,12 @@ ggplot(Top10Genres, aes(x = reorder(Genre, n), y = n)) +
 
 ```
 
-## Sub-Genres in Action
-
-Shows the sub genres of action games
+## Sub-Genres in Top 3 Genres
+One of the comments we received during our Work-In Progress Presentation is if we could split up or subdivide the action category since it looked like it was too broadly defined. To help rectify this issue, we thought it may be best to show the other tags that each game in the genres: Indie, Action, Adventure. We looked at this to break down what other genres were connected to the ones listed above. 
 
 ```{r}
 #| label: subGenreMergeData
-#| echo: true
+#| echo: false
 #| message: false
 
 # Prepare a subset with only top 3 genres
@@ -137,6 +207,7 @@ TopGenres <- c("Indie", "Action", "Adventure")
 
 # Filter and explode tags
 TopSubGenres <- MergedData %>%
+  slice(1:400) %>%
   filter(str_detect(genres, paste(TopGenres, collapse = "|"))) %>%
   select(Name, genres, steamspy_tags) %>%
   separate_rows(genres, sep = ";") %>%
@@ -151,10 +222,9 @@ TopSubGenres <- MergedData %>%
 
 ```
 
-
 ```{r}
 #| label: topSubGeners
-#| echo: true
+#| echo: false
 #| message: false
 
 
@@ -176,12 +246,15 @@ ggplot(TopSubGenres, aes(x = genres, y = count, fill = steamspy_tags)) +
 
 ```
 
+## Reception to Popularity
+Another thing we wanted to explore was whether a higher reception, which would be taking number of positive reviews and dividing it by the sum of positive reviews and negative reviews, and comparing it to the peak player count. Steam only uses a binary system for its review system, so while we would have liked to have a more naunced way to calculate reception, it simply is not possible. We decided after looking at the initial graph to exclude the top 2 games, since their player count expanded out the x-axis so much that it made reading the graph difficult. We hypothesized that the higher reception a game had, the higher its peak player count would be. Our thought process was that a higher reception would make more people recommend the game, which would cause a positive feedback loop. However, our graph only showed a slightly positive relationship between the peak player count and its reception.
+
 ```{r}
-#| label: reviewsVsPlayerCount
-#| echo: true
+#| label: reviewsVsPopularity
+#| echo: false
 #| message: false
 MergedDataReviews <- MergedDataTidy %>% 
-  slice(1:400) %>%
+  slice(3:400) %>%
   select(Name, All_Time_Peak, Positive_Ratings, Negative_Ratings) %>%
   mutate(
     PercentageOfPositiveReviews = Positive_Ratings / (Negative_Ratings + Positive_Ratings) * 100
@@ -206,19 +279,7 @@ ggplot(
 
 # Conclusion
 
-The Steam gaming reveals multiple intriguing patterns which become visible through visual analysis. Firstly,
-
-The Top  10 Most Played Games chart shows Counter-Strike: Global Offensive and Dota 2 as top games  which sustain more than one million peak concurrent players.
-
-The data shows competitive multiplayer games remain popular throughout time  according to this information.
-
-The Genre Count chart reveals that Action and Indie genres make up the biggest collection  of available Steam titles. The tools which allow indie developers to develop and distribute games in these genres could  be the reason for this situation.
-
-The Peak Players by Genre boxplot reveals that user engagement levels differ  substantially between different genres. Free to Play and Action games achieve the highest player count peaks compared to all  other genres but Nudity and Animation & Modeling genres show very low user engagement.
-
-The data reveals  that genre selection acts as a strong indicator to determine both audience size and user participation levels.
-
-This analysis gives us  a current view of Steam user preferences together with publishing behavior on the platform. The analysis provides important knowledge  about game development and marketing strategies as well as user conduct patterns.
+Throughout our analysis, we wanted to find any similarities and/or trends in the most popular Steam games. From our analysis, we found that action, adventure, and indie games seemed to draw in the most players. Our analysis also found that player reception is not as important as we initially hypothesized. It only showed a slightly positive relationship between the two variables.
 
 Thank you for taking the time to explore our analysis!
 
